@@ -25,9 +25,24 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+        # защита от реентерации (важно для стабильности Qt)
+        self._lock = False
+
     def handle_message(self, text: str):
-        self.chat_view.add_message("You", text)
+        if self._lock:
+            return
 
-        response = get_bot_response(text)
+        self._lock = True
+        try:
+            text = text.strip()
+            if not text:
+                return
 
-        self.chat_view.add_message("Bot", response)
+            self.chat_view.add_message("You", text)
+
+            response = get_bot_response(text)
+
+            self.chat_view.add_message("Bot", response)
+
+        finally:
+            self._lock = False

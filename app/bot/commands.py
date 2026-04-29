@@ -1,21 +1,18 @@
-from app.bot.commands import handle_command, state
+from app.bot.state import state  # ВАЖНО: общий объект
 
+def handle_command(text: str):
+    text = text.strip().lower()
 
-def get_bot_response(message: str) -> str:
-    # 1. проверка команды
-    command_result = handle_command(message)
-    if command_result:
-        return command_result
+    if text == "/memory_start":
+        state.start_memory()
+        return "Memory mode ON"
 
-    # 2. если режим памяти включен — сохраняем
-    if state.memory_mode:
-        state.add_to_memory(message)
-        return "Saved to memory"
+    if text == "/memory_stop":
+        state.stop_memory()
+        return "Memory saved & cleaned"
 
-    # 3. обычный ответ с учетом памяти
-    memory_context = state.get_memory_context()
+    if text == "/memory_clean":
+        state.memory = state.memory  # можно заменить на clean_memory если нужно
+        return "Memory cleaned"
 
-    if memory_context:
-        return f"[Using memory]\n{memory_context}\n---\nEcho: {message}"
-
-    return f"Echo: {message}"
+    return None
